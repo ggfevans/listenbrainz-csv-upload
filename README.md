@@ -8,9 +8,11 @@ ListenBrainz has a built-in Last.fm import feature, but at the time of writing i
 
 It's simple, it worked for ~97k listens spanning 13 years, and it might work for you too.
 
+A proper implementation would pull scrobbles directly from the Last.fm API, but that sounded like work and the CSV was already right there. Maybe someday.
+
 ## Getting your CSV
 
-Use [lastfm-to-csv](https://github.com/benfoxall/lastfm-to-csv) to export your Last.fm scrobble history. The expected CSV format is four columns with no header row:
+Go to [benjaminbenben.com/lastfm-to-csv/](https://benjaminbenben.com/lastfm-to-csv/), enter your Last.fm username, and download the generated CSV file. The expected format is four columns with no header row:
 
 ```
 Artist,Album,Track,Timestamp
@@ -26,7 +28,11 @@ Radiohead,OK Computer,Paranoid Android,15 Jun 2007 22:30
 
 Requires Python 3.7+.
 
+Create a virtual environment and install dependencies:
+
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
