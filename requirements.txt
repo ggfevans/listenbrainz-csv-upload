@@ -1,2 +1,2 @@
-liblistenbrainz
-python-dotenv
+liblistenbrainz==0.6.1
+python-dotenv==1.2.1
