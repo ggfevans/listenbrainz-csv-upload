@@ -1,5 +1,6 @@
 import csv
 import json
+import stat
 import time
 import argparse
 import os
@@ -12,7 +13,19 @@ import requests
 
 load_dotenv()
 
+ENV_FILE = ".env"
 PROGRESS_FILE = "progress.json"
+
+
+def check_env_permissions():
+    if not os.path.exists(ENV_FILE):
+        return
+    try:
+        mode = os.stat(ENV_FILE).st_mode
+        if mode & (stat.S_IRGRP | stat.S_IROTH):
+            print(f"WARNING: {ENV_FILE} is readable by other users. Run: chmod 600 {ENV_FILE}")
+    except OSError:
+        pass
 BATCH_SIZE = 50
 
 
@@ -183,6 +196,8 @@ def main():
     group.add_argument("--dry-run", action="store_true", help="Validate and preview without submitting")
     group.add_argument("--submit", action="store_true", help="Submit listens to ListenBrainz")
     args = parser.parse_args()
+
+    check_env_permissions()
 
     if not os.path.isfile(args.csv_file):
         print(f"ERROR: File not found or not a regular file: {args.csv_file}")

@@ -40,6 +40,7 @@ Copy the example environment file and add your [ListenBrainz user token](https:/
 
 ```bash
 cp .env.example .env
+chmod 600 .env
 ```
 
 Then edit `.env` and replace `your-token-here` with your actual token.
