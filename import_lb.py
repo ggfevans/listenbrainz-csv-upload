@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 
 from dotenv import load_dotenv
 import liblistenbrainz
+from liblistenbrainz.errors import ListenBrainzAPIException, InvalidAuthTokenException
+import requests
 
 load_dotenv()
 
@@ -42,7 +44,7 @@ def read_listens(csv_path):
             try:
                 listen = parse_row(row)
                 rows.append((line_num, listen))
-            except Exception as e:
+            except (ValueError, IndexError) as e:
                 print(f"WARNING: Skipping line {line_num}: {e}")
     rows.reverse()
     return rows
@@ -138,13 +140,26 @@ def submit(listens):
                 client.submit_multiple_listens(batch)
                 success = True
                 break
-            except Exception as e:
+            except InvalidAuthTokenException:
+                print("ERROR: Invalid auth token. Check your LISTENBRAINZ_TOKEN.")
+                save_progress(start_index + batch_start - 1 if batch_start > 0 else last_index)
+                return
+            except ListenBrainzAPIException as e:
+                err_msg = f"API error (HTTP {e.status_code})"
                 if attempt < 2:
                     wait_time = 2 ** (attempt + 1)
-                    print(f"  Retry {attempt + 1}/2 after error: {e}. Waiting {wait_time}s...")
+                    print(f"  Retry {attempt + 1}/2: {err_msg}. Waiting {wait_time}s...")
                     time.sleep(wait_time)
                 else:
-                    print(f"ERROR: Failed to submit batch {batch_num + 1} after 3 attempts: {e}")
+                    print(f"ERROR: Failed batch {batch_num + 1} after 3 attempts: {err_msg}")
+            except requests.exceptions.RequestException as e:
+                err_msg = f"{type(e).__name__}"
+                if attempt < 2:
+                    wait_time = 2 ** (attempt + 1)
+                    print(f"  Retry {attempt + 1}/2: {err_msg}. Waiting {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"ERROR: Failed batch {batch_num + 1} after 3 attempts: {err_msg}")
 
         if not success:
             save_progress(start_index + batch_start - 1 if batch_start > 0 else last_index)
@@ -168,6 +183,10 @@ def main():
     group.add_argument("--dry-run", action="store_true", help="Validate and preview without submitting")
     group.add_argument("--submit", action="store_true", help="Submit listens to ListenBrainz")
     args = parser.parse_args()
+
+    if not os.path.isfile(args.csv_file):
+        print(f"ERROR: File not found or not a regular file: {args.csv_file}")
+        return
 
     print(f"Reading CSV from {args.csv_file}...")
     listens = read_listens(args.csv_file)
