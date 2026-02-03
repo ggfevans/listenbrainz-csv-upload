@@ -1,0 +1,2 @@
+liblistenbrainz
+python-dotenv
