@@ -31,6 +31,7 @@ BATCH_SIZE = 50
 
 def parse_row(row):
     artist, album, track, timestamp_str = row
+    timestamp_str = timestamp_str.replace(", ", " ")
     dt = datetime.strptime(timestamp_str.strip(), "%d %b %Y %H:%M")
     dt = dt.replace(tzinfo=timezone.utc)
     listened_at = int(dt.timestamp())
