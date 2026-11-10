@@ -21,7 +21,7 @@ Artist,Album,Track,Timestamp
 Example:
 
 ```
-Radiohead,OK Computer,Paranoid Android,15 Jun 2007 22:30
+Radiohead,OK Computer,Paranoid Android,"15 Jun 2007, 22:30"
 ```
 
 ## Setup
